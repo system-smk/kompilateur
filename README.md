@@ -138,11 +138,11 @@ Ouvre une issue ou une PR — on code ensemble.
 > Et de **Grok** — l’IA qui code avec toi, pas pour toi.  
 >  
 > _"Parce que g++ c’est bien. Mais lanceur, c’est mieux."_  
-> Made with 🧠, 🛠️, et un peu de magie IA.
+> Made with 🧠, 🛠️, et la magie IA.
 
 ---
 
-## 🏷️ Bonus : Badges GitHub
+
 
 
 
