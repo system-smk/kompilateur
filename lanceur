@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# lanceur — IA du dev : détecte, compile, lance
+
+OUTPUT="go"
+SOURCES=(*.cpp)
+LIBS=()
+RUN=true  # toujours lancer après compilation
+
+# === 1. Détection automatique des libs ===
+detect_libs() {
+    echo "Analyse du code..."
+    for file in "${SOURCES[@]}"; do
+        [ ! -f "$file" ] && continue
+
+        if grep -q "SFML" "$file" || grep -q "sfml" "$file"; then
+            LIBS+=("sfml-graphics" "sfml-window" "sfml-system")
+            echo "SFML détecté"
+        fi
+
+        if grep -q "boost/asio" "$file"; then
+            LIBS+=("boost_system")
+            echo "Boost.Asio détecté"
+        fi
+
+        if grep -q "Poco/" "$file"; then
+            LIBS+=("PocoFoundation" "PocoNet" "PocoUtil")
+            echo "Poco détecté"
+        fi
+    done
+
+    # Supprimer doublons
+    LIBS=($(printf '%s\n' "${LIBS[@]}" | sort -u))
+}
+
+# === 2. Création de projet si vide ===
+init_project() {
+    if [ ${#SOURCES[@]} -eq 0 ] || [ "${SOURCES[0]}" = "*.cpp" ]; then
+        echo "Aucun .cpp → création d'un projet de base..."
+
+        cat > main.cpp << 'EOF'
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, lanceur !\n";
+    return 0;
+}
+EOF
+        echo "main.cpp créé !"
+        SOURCES=("main.cpp")
+    fi
+}
+
+# === 3. Compilation ===
+compile() {
+    echo -e "\nCompilation → $OUTPUT"
+    [ ${#LIBS[@]} -gt 0 ] && echo "Libs détectées : ${LIBS[*]}"
+
+    CMD=(g++ -std=c++17 -Wall -Wextra -O2)
+    for lib in "${LIBS[@]}"; do CMD+=(-l"$lib"); done
+    CMD+=("${SOURCES[@]}" -o "$OUTPUT")
+
+    echo "→ ${CMD[*]}"
+    "${CMD[@]}"
+    [ $? -eq 0 ] && echo "Compilation OK" || { echo "Échec"; exit 1; }
+}
+
+# === 4. Lancement ===
+launch() {
+    if [ -f "./$OUTPUT" ] && $RUN; then
+        echo -e "\nLancement de ./$OUTPUT...\n"
+        ./"$OUTPUT"
+        echo -e "\nFin (retour : $?)."
+    fi
+}
+
+# === COMMANDE PRINCIPALE ===
+case "$1" in
+    init)
+        init_project
+        exit 0
+        ;;
+    "")
+        init_project
+        detect_libs
+        compile
+        launch
+        ;;
+    *)
+        echo "Usage :"
+        echo "  ./lanceur         → détecte, compile, lance"
+        echo "  ./lanceur init    → crée un projet vide"
+        exit 1
+        ;;
+esac
