@@ -99,7 +99,7 @@ SFML détecté automatiquement !
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/mathieu-karim/lanceur.git
+git clone https://github.com/system-smk/kompilateur.git
 cd lanceur
 chmod +x lanceur
 ./lanceur init    # première fois
